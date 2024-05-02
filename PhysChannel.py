@@ -31,6 +31,31 @@ class PhysChannel:
         self.dr = False
         self.rand = True
 
+        # change from window
+        self.diff = 5
+        self.dist = 200
+        self.noise_u = 5
+        self.a0 = 100
+        self.r0 = 100
+        self.sigma = 4.5
+        self.scale = 0.2
+
+    def set_all_params(self, params):
+        self.sig = params[0]
+        self.sig_step = params[1]
+        self.noise = params[2]
+        self.noise_u = params[3]
+        self.diff = params[4]
+        self.scale = params[5]
+        self.r0 = params[6]
+        self.a0 = params[7]
+        self.sigma = params[8]
+        self.n = params[9]
+        self.dist = params[10]
+        self.uniform = params[11]
+        self.dr = params[12]
+        self.rand = params[13]
+
     def set_signal(self, signal):
         self.sig = signal
 
