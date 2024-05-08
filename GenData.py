@@ -247,34 +247,5 @@ if __name__ == '__main__':
     ui = Ui_MainWindow()
     '''
 
-    ui = Ui_MainWindow()
-    # MainWindow.show()
-
-    ref_signal = ExtractSignal()
-    ref_signal.signal_extractioon()
-
-    # Создаем сетку для двух графиков
-    fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(10, 5))
-
-    sig_x, sig_y = ref_signal.sig_x, ref_signal.sig_y
-    noise_sig_x, noise_sig_y = ref_signal.sig_del_noise_x, ref_signal.sig_del_noise_y
-    print(f'{sig_x=}')
-    print(f'{sig_y=}')
-
-    # Построение первого графика (с шумом)
-    axes[0].plot(noise_sig_x, noise_sig_y, linewidth=1.5)
-    axes[0].set_xlim(-0.01, 0.42034375)
-    axes[0].set_ylim(-20.1, 20.1)
-    axes[0].grid()
-
-    # Построение второго графика (без шума)
-    axes[1].plot(sig_x, sig_y, linewidth=1.5)
-    axes[1].set_xlim(-0.00096875, 0.02034375)
-    axes[1].set_ylim(-1.1, 1.1)
-    axes[1].grid()
-
-    plt.tight_layout()  # Для улучшения компоновки графиков
-    plt.show()
-
-    exit(0)
+    
 
