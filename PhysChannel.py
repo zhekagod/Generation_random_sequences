@@ -67,8 +67,11 @@ class PhysChannel:
         if self.uniform is False:
             ts = expon.rvs(size=self.diff, scale=self.scale)
             ts = np.sort(ts)
+            if len(ts):
+                for i in range(len(ts)):
+                    ts[-(i + 1)] = np.sum(ts[0:len(ts) - i])
         else:
-            ts = np.arange(start=self.scale, stop=self.scale * self.diff + self.scale/10, step=self.scale)
+            ts = np.arange(start=self.scale, stop=self.scale * self.diff + self.scale / 10, step=self.scale)
         if self.dr:
             d_r = np.array([0])
             ts = np.append(d_r, ts)

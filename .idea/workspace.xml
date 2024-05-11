@@ -4,10 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4dd2c066-b30a-4a76-ad0b-365be953594a" name="Changes" comment="Генерация данных, версия 0.0.1">
+    <list default="true" id="4dd2c066-b30a-4a76-ad0b-365be953594a" name="Changes" comment="Генерация данных, версия 0.0.2: &#10;- добавлена одна из реализаций квантования обрабатываемого сигнала">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/DataProcessing.py" beforeDir="false" afterPath="$PROJECT_DIR$/DataProcessing.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/GenData.py" beforeDir="false" afterPath="$PROJECT_DIR$/GenData.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PhysChannel.py" beforeDir="false" afterPath="$PROJECT_DIR$/PhysChannel.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -166,16 +167,43 @@
       <option name="project" value="LOCAL" />
       <updated>1714638810949</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Генерация данных, версия 0.0.2: &#10;- добавлена одна из реализаций квантования обрабатываемого сигнала">
+      <option name="closed" value="true" />
+      <created>1715158957138</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1715158957138</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Initial commit" />
     <MESSAGE value="Генерация данных, версия 0.0.1" />
-    <option name="LAST_COMMIT_MESSAGE" value="Генерация данных, версия 0.0.1" />
+    <MESSAGE value="Генерация данных, версия 0.0.2: &#10;- добавлена одна из реализаций квантования обрабатываемого сигнала" />
+    <option name="LAST_COMMIT_MESSAGE" value="Генерация данных, версия 0.0.2: &#10;- добавлена одна из реализаций квантования обрабатываемого сигнала" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/GenData.py</url>
+          <line>183</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
       <default-breakpoints>
         <breakpoint type="python-exception">
           <properties notifyOnTerminate="true" exception="BaseException">

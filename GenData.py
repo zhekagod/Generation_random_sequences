@@ -153,17 +153,68 @@ class ExtractSignal(Ui_MainWindow):
         self.u = 1
         self.periods = 31
         self.freq = 1600
+        self.noise_coef = None
+        self.noise_x = None
+        self.noise_y = None
 
-    def signal_extractioon(self):
+        # change from window
+        self.phys_channel.diff = 5
+        self.phys_channel.dist = 200
+        self.phys_channel.noise_u = 5
+        self.phys_channel.a0 = 100
+        self.phys_channel.r0 = 100
+        self.phys_channel.sigma = 4.5
+        self.phys_channel.scale = 0.2
+
+        # change from window
+        self.sig.modulation = 'Gold'
+        self.sig.periods = 31
+        self.sig.u = 1
+        self.sig.freq = 1600
+        self.sig.bc = False
+
+        # change from window
+        self.opt_rec.noise_u = self.phys_channel.noise_u
+
+    def signal_extraction_old(self):
         self.gen_sig()
         self.gen_delays()
         self.gen_del_noise_sig()
 
-        # self.gen_conv() # Response of correlation receiver
-        # self.snr_calc()
-        #self.gen_peaks()
-        # self.gen_borders()
-        # self.gen_spec()
+        self.gen_conv()  # Response of correlation receiver
+        self.snr_calc()
+        self.gen_peaks()
+        self.gen_borders()
+        self.gen_spec()
+
+    def signal_extraction(self):
+        self.static_canvas.figure.clear()
+        self.axes = self.static_canvas.figure.subplots(2, 2, gridspec_kw={
+            'width_ratios': [3, 1],
+            'height_ratios': [1, 1]})
+        self.init_axes()
+        self.read_sig_info()
+        self.read_ph_ch_info()
+        self.gen_sig()
+        self.gen_delays()
+        self.gen_del_noise_sig()
+        self.gen_dir_name()
+        self.gen_conv()
+        self.snr_calc()
+        self.gen_peaks()
+        self.gen_borders()
+        self.gen_spec()
+
+    def gen_sig_noise(self, size, noise_coef,
+                      set_to_axis=None, noise_type='normal'):
+        noise = None
+        if noise_type == 'normal':
+            noise = np.random.normal(0, noise_coef, size=size)
+        if set_to_axis == 'x':
+            self.noise_x = noise
+        elif set_to_axis == 'y':
+            self.noise_y = noise
+        return noise
 
 
 def save_data_to_file(data, filename='input_signal_data.txt'):
@@ -246,6 +297,3 @@ if __name__ == '__main__':
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
     '''
-
-    
-
