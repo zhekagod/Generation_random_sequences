@@ -4,11 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4dd2c066-b30a-4a76-ad0b-365be953594a" name="Changes" comment="Генерация данных, версия 0.0.2: &#10;- добавлена одна из реализаций квантования обрабатываемого сигнала">
+    <list default="true" id="4dd2c066-b30a-4a76-ad0b-365be953594a" name="Changes" comment="```````````````Генерация данных, версия 0.0.3: &#10;- переход на данные оптического ресивера&#10;&#10;&#10;```````````````">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/DataProcessing.py" beforeDir="false" afterPath="$PROJECT_DIR$/DataProcessing.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/GenData.py" beforeDir="false" afterPath="$PROJECT_DIR$/GenData.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PhysChannel.py" beforeDir="false" afterPath="$PROJECT_DIR$/PhysChannel.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -175,7 +174,15 @@
       <option name="project" value="LOCAL" />
       <updated>1715158957138</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Генерация данных, версия 0.0.3: &#10;- переход на данные оптического ресивера">
+      <option name="closed" value="true" />
+      <created>1715419577317</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1715419577317</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -193,7 +200,8 @@
     <MESSAGE value="Initial commit" />
     <MESSAGE value="Генерация данных, версия 0.0.1" />
     <MESSAGE value="Генерация данных, версия 0.0.2: &#10;- добавлена одна из реализаций квантования обрабатываемого сигнала" />
-    <option name="LAST_COMMIT_MESSAGE" value="Генерация данных, версия 0.0.2: &#10;- добавлена одна из реализаций квантования обрабатываемого сигнала" />
+    <MESSAGE value="Генерация данных, версия 0.0.3: &#10;- переход на данные оптического ресивера" />
+    <option name="LAST_COMMIT_MESSAGE" value="Генерация данных, версия 0.0.3: &#10;- переход на данные оптического ресивера" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -187,6 +187,10 @@ class ExtractSignal(Ui_MainWindow):
         self.gen_borders()
         self.gen_spec()
 
+    def set_opt_rec_arrays(self):
+        self.opt_rec.orig_array_x = np.append(self.sig_del_noise_x, np.array([max(self.sig_del_noise_x) + self.dt]))
+        self.opt_rec.orig_array_y = np.append(np.abs(self.conv), np.zeros(1))
+
     def signal_extraction(self):
         self.static_canvas.figure.clear()
         self.axes = self.static_canvas.figure.subplots(2, 2, gridspec_kw={
@@ -204,6 +208,7 @@ class ExtractSignal(Ui_MainWindow):
         self.gen_peaks()
         self.gen_borders()
         self.gen_spec()
+        self.set_opt_rec_arrays()
 
     def gen_sig_noise(self, size, noise_coef,
                       set_to_axis=None, noise_type='normal'):
