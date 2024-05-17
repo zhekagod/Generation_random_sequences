@@ -4,6 +4,7 @@ import math as m
 import random
 from GenData import RndInputData, save_data_to_file, parse_data_from_file
 from GenData import ExtractSignal
+import pyqtgraph as pg
 
 
 def colored_print(text, color='red'):
@@ -17,9 +18,8 @@ def colored_print(text, color='red'):
                    'white': '\033[37m',
                    'reset': '\033[0m'}
 
-    if color == 'red':
-        print(text_colors[color] + '{}'.format(text), end='')
-        print(text_colors['reset'].format(text))
+    print(text_colors[color] + '{}'.format(text), end='')
+    print(text_colors['reset'].format(text))
 
 
 def find_extremes(x_values, y_values, extreme_type='all', first=False):
@@ -249,19 +249,19 @@ print(f'{x1=}, {x2=}')
 def quantisation(array, bits_count, q_type='mean', **kwargs):
     # mean означает equal intervals
     # quant_types = {}
-    print(kwargs)
+    # print(kwargs)
     if q_type == 'mean':
         q = mean_quantisation(array, len(array),
                               bits_count, **kwargs)
-        print(f'{q=}')
-        print(f'{len(q)=}')
-        print(f'{len(array)=}')
+        # print(f'{q=}')
+        # print(f'{len(q)=}')
+        # print(f'{len(array)=}')
     elif q_type == 'numpy_array_split':
         q = np.array_split(array, len(array) // bits_count)
-        print(f'{q=}')
+        # print(f'{q=}')
     elif q_type == 'random':
         q = random_quantisation(array, len(array), bits_count)
-        print(f'random {q=}')
+        # print(f'random {q=}')
 
     return q
 
@@ -269,7 +269,8 @@ def quantisation(array, bits_count, q_type='mean', **kwargs):
 def generate_sequence(bits_count: int,
                       values: list[float] | np.array([float]) = None,
                       delay_delta: float = None,
-                      book=False):
+                      book=False,
+                      **kwargs):
     if book:
         sequence = ''
         # Написано, что ключевые биты генерируются
@@ -299,9 +300,8 @@ def mean_interval_distance(array: list[float] | np.array([float]), length: int):
     res = 0
     for i in range(length - 1):
         res += find_interval_distance(array, first=i, second=i + 1,
-                                      idx=len(array[0])//2)
-    return res/length
-
+                                      idx=len(array[0]) // 2)
+    return res / length
 
 
 def find_peak(x_values, y_values):
@@ -333,7 +333,9 @@ def plot_convolution(signal_source,
         noise = signal_source.gen_sig_noise(len(sig_x), 0.001)
         noise[0] = 0  # Надо ли обнулять первую координату???
         print(f'{noise=}')
-        sig_x += 0.1
+        # 0.1
+        sig_x += noise
+        # signal_source.peaks_x += noise
         print(f'noise_x={sig_x}')
     if need_to_show_now:
         plt.plot(sig_x, sig_y)
@@ -349,6 +351,23 @@ def plot_convolution(signal_source,
                 print(signal_source.opt_rec.orig_array_x[0], sig_x[-1])
                 plot_axis[1].set_xlim(signal_source.opt_rec.orig_array_x[0], sig_x[-1])
                 plot_axis[1].plot(sig_x, sig_y)
+
+
+def plot_peaks_bar(signal_source):
+    '''signal_source.preview_plt = pg.PlotWidget()
+    sig_s_prev = signal_source.preview_plt
+    sig_s_prev.setBackground('w')
+    sig_s_prev.setFixedSize(180, 145)
+    sig_s_prev.move(20, 490)
+    sig_s_prev.showGrid(x=True, y=True)'''
+    plt.grid(True)
+    plt.bar(
+        x=signal_source.ts,
+        height=signal_source.us,
+        width=len(signal_source.sig_x) * (signal_source.sig_x[1] - signal_source.sig_x[0]),
+        color='red')
+
+    plt.show()
 
 
 '''RID = RndInputData()
@@ -400,6 +419,8 @@ if __name__ == '__main__':
     ref_signal.signal_extraction()
     print(f'{ref_signal.peaks_x=}')
     print(f'{ref_signal.peaks_y=}')
+
+    plot_peaks_bar(ref_signal)
     try:
         print(f'{ref_signal.sig_x == ref_signal.sig_del_noise_x}')
     except ValueError:
@@ -447,7 +468,7 @@ if __name__ == '__main__':
     array = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     bits_count = 4
     result = quantisation(array, bits_count, q_type='random')'''
-    
+
     '''
     quantisation(list(range(1, 41)), 12, include_remains=True,
                  where_include='center')
