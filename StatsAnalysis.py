@@ -95,8 +95,11 @@ def test_mean_interval_distances(
             # print(i)
         else:
             end_time = time()
-            output.write(f'Test elapsed time: {end_time - start_time}')
-            print(f'Test elapsed time: {end_time - start_time}')
+            delta_time = end_time - start_time
+            mins = delta_time//60
+            secs = delta_time - mins * 60
+            output.write(f'Test elapsed time: {mins} minutes and {secs} seconds')
+            print(f'Test elapsed time: {mins} minutes and {secs} seconds')
             res = 0
             lines = output.readlines()
             for line in lines[:-1]:
@@ -109,5 +112,11 @@ def test_mean_interval_distances(
 if __name__ == '__main__':
     progress_list = [False for i in range(8)]
     set_initial_test_progress()
-    test_mean_interval_distances()
+    # test_mean_interval_distances()
+    '''
+    with open('test_mean_interval_distances.txt', 'r') as f:
+        lines = f.readlines()
+        res = sum(map(float, lines[:-1]))/len(lines[:-1])
+    print(res) # 0.0009866208565240113  
+    '''
     exit(0)

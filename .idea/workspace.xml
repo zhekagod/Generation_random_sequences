@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4dd2c066-b30a-4a76-ad0b-365be953594a" name="Changes" comment="```````````````Генерация данных, версия 0.0.4: &#10;- добавлены первые алгоритмы квантизации&#10;- внедрён вызов действий файла только изнутри себя&#10;&#10;&#10;```````````````">
+    <list default="true" id="4dd2c066-b30a-4a76-ad0b-365be953594a" name="Changes" comment="```````````````Генерация данных, версия 0.0.5: &#10;- начало разработки и проведение первых статистических тестов&#10;- реализована функция отдельного построения и вывода пиков&#10;&#10;&#10;```````````````">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/DataProcessing.py" beforeDir="false" afterPath="$PROJECT_DIR$/DataProcessing.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/StatsAnalysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/StatsAnalysis.py" afterDir="false" />
@@ -214,7 +214,15 @@
       <option name="project" value="LOCAL" />
       <updated>1715698223699</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="```````````````Генерация данных, версия 0.0.5: &#10;- начало разработки и проведение первых статистических тестов&#10;- реализована функция отдельного построения и вывода пиков&#10;&#10;&#10;```````````````">
+      <option name="closed" value="true" />
+      <created>1715959444792</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1715959444792</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -234,7 +242,8 @@
     <MESSAGE value="Генерация данных, версия 0.0.2: &#10;- добавлена одна из реализаций квантования обрабатываемого сигнала" />
     <MESSAGE value="Генерация данных, версия 0.0.3: &#10;- переход на данные оптического ресивера" />
     <MESSAGE value="```````````````Генерация данных, версия 0.0.4: &#10;- добавлены первые алгоритмы квантизации&#10;- внедрён вызов действий файла только изнутри себя&#10;&#10;&#10;```````````````" />
-    <option name="LAST_COMMIT_MESSAGE" value="```````````````Генерация данных, версия 0.0.4: &#10;- добавлены первые алгоритмы квантизации&#10;- внедрён вызов действий файла только изнутри себя&#10;&#10;&#10;```````````````" />
+    <MESSAGE value="```````````````Генерация данных, версия 0.0.5: &#10;- начало разработки и проведение первых статистических тестов&#10;- реализована функция отдельного построения и вывода пиков&#10;&#10;&#10;```````````````" />
+    <option name="LAST_COMMIT_MESSAGE" value="```````````````Генерация данных, версия 0.0.5: &#10;- начало разработки и проведение первых статистических тестов&#10;- реализована функция отдельного построения и вывода пиков&#10;&#10;&#10;```````````````" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

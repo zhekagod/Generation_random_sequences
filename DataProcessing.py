@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import math as m
-import random
+import random as rnd
 from GenData import RndInputData, save_data_to_file, parse_data_from_file
 from GenData import ExtractSignal
 import pyqtgraph as pg
@@ -204,13 +204,13 @@ result = split_array(array, bits_count, where_include='right')
 print(result)'''
 
 
-def random_quantisation(array, total_length, bits_count, min_length=1, max_length=None):
+def rnd_quantisation(array, total_length, bits_count, min_length=1, max_length=None):
     max_length = max_length or total_length  # Если не указана максимальная длина, используем всю длину исходного массива
     if min_length > max_length:
         raise ValueError("Min length cannot be greater than max length.")
 
     # Генерация случайных длин подмассивов
-    lengths = [random.randint(min_length, min(max_length, total_length)) for _ in range(bits_count)]
+    lengths = [rnd.randint(min_length, min(max_length, total_length)) for _ in range(bits_count)]
     # Корректировка последней длины, чтобы сумма равнялась длине массива
     lengths[-1] += len(array) - sum(lengths)
 
@@ -230,7 +230,7 @@ def generate_numbers(bits_count, length):
 
     # Генерация случайных чисел
     for _ in range(bits_count - 1):
-        num = random.randint(1, length - (bits_count - len(numbers)))
+        num = rnd.randint(1, length - (bits_count - len(numbers)))
         numbers.append(num)
         length -= num
 
@@ -259,9 +259,9 @@ def quantisation(array, bits_count, q_type='mean', **kwargs):
     elif q_type == 'numpy_array_split':
         q = np.array_split(array, len(array) // bits_count)
         # print(f'{q=}')
-    elif q_type == 'random':
-        q = random_quantisation(array, len(array), bits_count)
-        # print(f'random {q=}')
+    elif q_type == 'rnd':
+        q = rnd_quantisation(array, len(array), bits_count)
+        # print(f'rnd {q=}')
 
     return q
 
@@ -283,8 +283,17 @@ def generate_sequence(bits_count: int,
         return bin(int(sequence, 2))
     else:
         res = [bin(num) for num in range(bits_count)]
-        random.shuffle(res)
+        rnd.shuffle(res)
         return res
+
+
+def generate_random_colors(count, seed=1):
+    rnd.seed(seed)
+    colors = []
+    for _ in range(count):
+        color = "#{:06x}".format(rnd.randint(0, 0xFFFFFF))
+        colors.append(color)
+    return colors
 
 
 def find_interval_distance(array: list[list[float]] | np.array((np.array([float]))),
@@ -309,9 +318,81 @@ def find_peak(x_values, y_values):
         ...
 
 
+def plot_sequence_borders(seq, plot_axis, axis_num):
+    '''# Определяем длину интервала и рисуем его на графике
+    interval_lengths = [subseq[-1] - subseq[0] for subseq in seq]
+    for i, length in enumerate(interval_lengths):
+        # axhline, axvline
+        plot_axis[axis_num].axhline(0.1 * i, xmin=0, xmax=length*100, color='red', linewidth=2)'''
+    for interval in seq:
+        # plot_axis[axis_num].text(interval[0], 10e-4, '---'*len(interval), fontsize=3, ha='center')
+        plot_axis[axis_num].plot(interval[0], linestyle='--')
+        plot_axis[axis_num].axhline(0.001,
+                                    xmin=interval[0],
+                                    xmax=interval[-1],
+                                    linewidth=10)
+def plot_peaks_bar(signal_source,
+                   add_noise=False,
+                   plot_axis=None,
+                   axis_num=None,
+                   need_to_show_now=False,
+                   **kwargs):
+    '''signal_source.preview_plt = pg.PlotWidget()
+    sig_s_prev = signal_source.preview_plt
+    sig_s_prev.setBackground('w')
+    sig_s_prev.setFixedSize(180, 145)
+    sig_s_prev.move(20, 490)
+    sig_s_prev.showGrid(x=True, y=True)'''
+    sig_orig_x = signal_source.opt_rec.orig_array_x
+    pos_x = kwargs['len_bar']
+    if ('bar_colors' in kwargs) and len(kwargs['bar_colors']) > 0:
+        bar_colors = kwargs['bar_colors']
+    else:
+        bar_colors = generate_random_colors(len(pos_x),
+                                            seed=kwargs['bar_colors_seed'])
+    if add_noise:
+        if 'noise' in kwargs:
+            pos_x += kwargs['noise']
+        else:
+            if 'noise_limits' in kwargs:
+                noise = [rnd.uniform(
+                    kwargs['noise_limits'][0],
+                    kwargs['noise_limits'][1])
+                    for _ in range(len(pos_x))]
+                for i, pos in enumerate(pos_x):
+                    if (pos + noise[i] < sig_orig_x[0]) and (noise[i] < 0):
+                        pos_x[i] = sig_orig_x[-1] + noise[i]
+                    elif (pos + noise[i] >= sig_orig_x[-1]) and (noise[i] > 0):
+                        pos_x[i] = sig_orig_x[0] + noise[i]
+                    else:
+                        pos_x[i] += noise[i]
+
+    if plot_axis is None or axis_num is None:
+        plt.grid(True)
+        plt.bar(
+            x=pos_x,
+            height=kwargs['height_bar'],
+            width=kwargs['width_bar'],
+            color=bar_colors)
+        if need_to_show_now:
+            plt.show()
+    else:
+        plot_axis[axis_num].grid(True)
+        plot_axis[axis_num].set_xlabel(kwargs['x_axis_label'])
+        plot_axis[axis_num].set_ylabel(kwargs['y_axis_label'])
+        plot_axis[axis_num].bar(
+            x=pos_x,
+            height=kwargs['height_bar'],
+            width=kwargs['width_bar'],
+            color=bar_colors)
+        if need_to_show_now:
+            plot_axis[axis_num].show()
+
+
 def plot_convolution(signal_source,
                      instant_show=False,
                      figure=None,
+                     with_bars=False,
                      plot_axis=None,
                      add_noise=False,
                      need_to_show_now=False):
@@ -342,32 +423,51 @@ def plot_convolution(signal_source,
         plt.show()
     else:
         if (figure is not None) and (plot_axis is not None):
-            #  if (figure and plot_axis) is not None
-            if not add_noise:
-                # plot_axis[0].autoscale(False, axis='x')
-                plot_axis[0].plot(sig_x, sig_y)
+            if not with_bars:
+                #  if (figure or plot_axis) is not None
+                if not add_noise:
+                    # plot_axis[0].autoscale(False, axis='x')
+                    plot_axis[0].plot(sig_x, sig_y)
+                else:
+                    # plot_axis[1].autoscale(False, axis='x')
+                    print(signal_source.opt_rec.orig_array_x[0], sig_x[-1])
+                    plot_axis[1].set_xlim(signal_source.opt_rec.orig_array_x[0], sig_x[-1])
+                    plot_axis[1].plot(sig_x, sig_y)
             else:
-                # plot_axis[1].autoscale(False, axis='x')
-                print(signal_source.opt_rec.orig_array_x[0], sig_x[-1])
-                plot_axis[1].set_xlim(signal_source.opt_rec.orig_array_x[0], sig_x[-1])
-                plot_axis[1].plot(sig_x, sig_y)
+                if not add_noise:
+                    plot_axis[0].plot(sig_x, sig_y)
+                    plot_peaks_bar(
+                        signal_source,
+                        add_noise=False,
+                        plot_axis=plot_axis, axis_num=1,
+                        len_bar=signal_source.ts,
+                        height_bar=signal_source.us,
+                        width_bar=len(signal_source.sig_x) * (signal_source.sig_x[1] - signal_source.sig_x[0]),
+                        bar_colors='red')
+
+                else:
+                    # plot_axis[1].autoscale(False, axis='x')
+                    # print(signal_source.opt_rec.orig_array_x[0], sig_x[-1])
+                    plot_axis[2].set_xlim(signal_source.opt_rec.orig_array_x[0], sig_x[-1])
+                    plot_axis[2].plot(sig_x, sig_y)
+                    plot_peaks_bar(
+                        signal_source,
+                        add_noise=False,
+                        plot_axis=plot_axis, axis_num=2,
+                        len_bar=ts,
+                        height_bar=us,
+                        width_bar=len(signal_source.sig_x) * (signal_source.sig_x[1] - signal_source.sig_x[0]),
+                        bar_colors='red')
 
 
-def plot_peaks_bar(signal_source):
-    '''signal_source.preview_plt = pg.PlotWidget()
-    sig_s_prev = signal_source.preview_plt
-    sig_s_prev.setBackground('w')
-    sig_s_prev.setFixedSize(180, 145)
-    sig_s_prev.move(20, 490)
-    sig_s_prev.showGrid(x=True, y=True)'''
-    plt.grid(True)
-    plt.bar(
-        x=signal_source.ts,
-        height=signal_source.us,
-        width=len(signal_source.sig_x) * (signal_source.sig_x[1] - signal_source.sig_x[0]),
-        color='red')
-
-    plt.show()
+def determine_peak_sequences(peaks_x, sequences):
+    idx_of_seq = []
+    for peak_x in peaks_x:
+        for idx, seq in enumerate(sequences):
+            if peak_x in seq:
+                print(f'{peak_x=}, {seq=}')
+                idx_of_seq.append(idx)
+    return [sequences[i] for i in idx_of_seq]
 
 
 '''RID = RndInputData()
@@ -417,10 +517,59 @@ plt.show()'''
 if __name__ == '__main__':
     ref_signal = ExtractSignal()
     ref_signal.signal_extraction()
-    print(f'{ref_signal.peaks_x=}')
-    print(f'{ref_signal.peaks_y=}')
+    print(f'{ref_signal.peaks_x=}, {ref_signal.ts=}')
+    print(f'{ref_signal.peaks_y=}, {ref_signal.us=}')
+    bar_colors_seed = rnd.randint(0, 256)
 
-    plot_peaks_bar(ref_signal)
+    # Проведение квантизации
+    opt_rec_orig_x = ref_signal.opt_rec.orig_array_x
+    len_opt_rec_orig_x = len(opt_rec_orig_x)
+    quants = quantisation(opt_rec_orig_x, 1024,
+                          include_remains=True, where_include='center')
+    print(quants[-1][-1] == opt_rec_orig_x[-1])
+
+    print(generate_sequence(1024))
+
+    m_intv_distance = mean_interval_distance(quants, 1024)
+    print(f'{m_intv_distance=}')
+
+    peak_sequences = determine_peak_sequences(ref_signal.peaks_x, quants)
+    print(f'{peak_sequences=}')
+
+    fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(10, 5))
+
+    plot_sequence_borders(peak_sequences, axes, 0)
+
+    # цвета должны соответствовать столбца в независимости от сдвигов
+    # и прыжков (отфиксировать строемую длину???)
+    # зафиксировать оси для обоих bar plot-ов (максимальый масштаб)
+    # передавать пики или ts и us ???
+    plot_peaks_bar(ref_signal,
+                   plot_axis=axes,
+                   axis_num=0,
+                   need_to_show_now=False,
+                   len_bar=ref_signal.peaks_x,
+                   height_bar=ref_signal.peaks_y,
+                   width_bar=len(ref_signal.sig_x) * (ref_signal.sig_x[1] - ref_signal.sig_x[0]),
+                   x_axis_label='Исходное расположение пиков',
+                   y_axis_label='Высота пиков',
+                   bar_colors_seed=bar_colors_seed
+                   )
+
+    plot_peaks_bar(ref_signal,
+                   add_noise=True,
+                   plot_axis=axes,
+                   axis_num=1,
+                   need_to_show_now=False,
+                   len_bar=ref_signal.peaks_x,
+                   height_bar=ref_signal.peaks_y,
+                   width_bar=len(ref_signal.sig_x) * (ref_signal.sig_x[1] - ref_signal.sig_x[0]),
+                   noise_limits=[-0.1, 0.1],
+                   x_axis_label='Сдвинутые шумом пики',
+                   y_axis_label='Высота пиков',
+                   bar_colors_seed=bar_colors_seed
+                   )
+
     try:
         print(f'{ref_signal.sig_x == ref_signal.sig_del_noise_x}')
     except ValueError:
@@ -436,17 +585,7 @@ if __name__ == '__main__':
     plot_convolution(ref_signal, instant_show=True)
 
     # ref_signal.show_signal()
-    # Проведение квантизации
-    opt_rec_orig_x = ref_signal.opt_rec.orig_array_x
-    len_opt_rec_orig_x = len(opt_rec_orig_x)
-    quants = quantisation(opt_rec_orig_x, 1024,
-                          include_remains=True, where_include='center')
-    print(quants[-1][-1] == opt_rec_orig_x[-1])
 
-    print(generate_sequence(1024))
-
-    m_intv_distance = mean_interval_distance(quants, 1024)
-    print(f'{m_intv_distance=}')
     '''
     001252470560381568
     0008271170301196819
@@ -467,7 +606,7 @@ if __name__ == '__main__':
     '''# Пример использования
     array = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     bits_count = 4
-    result = quantisation(array, bits_count, q_type='random')'''
+    result = quantisation(array, bits_count, q_type='rnd')'''
 
     '''
     quantisation(list(range(1, 41)), 12, include_remains=True,
