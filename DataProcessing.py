@@ -5,6 +5,7 @@ import random as rnd
 from GenData import RndInputData, save_data_to_file, parse_data_from_file
 from GenData import ExtractSignal
 import pyqtgraph as pg
+import copy
 
 
 def colored_print(text, color='red'):
@@ -280,9 +281,11 @@ def generate_sequence(bits_count: int,
                 sequence += '1'
             elif values[i] - values[i - 1] - delay_delta < 0:
                 sequence += '0'
+        max_length = max(len(sequence).bit_count(), bits_count.bit_count())
+        sequence = sequence.zfill(int(m.log2(max_length)))
         return bin(int(sequence, 2))
     else:
-        res = [bin(num) for num in range(bits_count)]
+        res = ['0b' + bin(num)[2:].zfill(int(m.log2(bits_count))) for num in range(bits_count)]
         rnd.shuffle(res)
         return res
 
@@ -331,20 +334,11 @@ def plot_sequence_borders(seq, plot_axis, axis_num):
                                     xmin=interval[0],
                                     xmax=interval[-1],
                                     linewidth=10)
-def plot_peaks_bar(signal_source,
-                   add_noise=False,
-                   plot_axis=None,
-                   axis_num=None,
-                   need_to_show_now=False,
-                   **kwargs):
-    '''signal_source.preview_plt = pg.PlotWidget()
-    sig_s_prev = signal_source.preview_plt
-    sig_s_prev.setBackground('w')
-    sig_s_prev.setFixedSize(180, 145)
-    sig_s_prev.move(20, 490)
-    sig_s_prev.showGrid(x=True, y=True)'''
+
+
+def gen_peaks_bar(signal_source, add_noise=False, **kwargs):
     sig_orig_x = signal_source.opt_rec.orig_array_x
-    pos_x = kwargs['len_bar']
+    pos_x = copy.deepcopy(kwargs['len_bar'])
     if ('bar_colors' in kwargs) and len(kwargs['bar_colors']) > 0:
         bar_colors = kwargs['bar_colors']
     else:
@@ -355,7 +349,7 @@ def plot_peaks_bar(signal_source,
             pos_x += kwargs['noise']
         else:
             if 'noise_limits' in kwargs:
-                noise = [rnd.uniform(
+                noise = [np.random.uniform(
                     kwargs['noise_limits'][0],
                     kwargs['noise_limits'][1])
                     for _ in range(len(pos_x))]
@@ -366,27 +360,65 @@ def plot_peaks_bar(signal_source,
                         pos_x[i] = sig_orig_x[0] + noise[i]
                     else:
                         pos_x[i] += noise[i]
+    return pos_x, bar_colors
 
+
+def plot_peaks_bar(pos_x, bar_colors,
+                   plot_axis=None, axis_num=None,
+                   bit_seqs=None,
+                   vertical_bit_seqs=False,
+                   **kwargs):
     if plot_axis is None or axis_num is None:
         plt.grid(True)
-        plt.bar(
+        bars = plt.bar(
             x=pos_x,
             height=kwargs['height_bar'],
             width=kwargs['width_bar'],
             color=bar_colors)
-        if need_to_show_now:
+        if bit_seqs is not None:
+            if vertical_bit_seqs:
+                for bar, bit_seq in zip(bars, bit_seqs):
+                    plt.text(bar.get_x() + bar.get_width(),
+                             bar.get_height(),
+                             bit_seq,
+                             ha='left',
+                             va='bottom',
+                             rotation=90)
+            else:
+                # Добавление подписей к столбикам
+                for i, bar in enumerate(min(bars, bit_seqs, key=len)):
+                    bar.set_label(bit_seqs[i])  # Устанавливаем подпись для каждого столбика
+                plt.legend(loc='upper right')  # Отображаем легенду
+        if kwargs['need_to_show_now']:
             plt.show()
     else:
         plot_axis[axis_num].grid(True)
         plot_axis[axis_num].set_xlabel(kwargs['x_axis_label'])
         plot_axis[axis_num].set_ylabel(kwargs['y_axis_label'])
-        plot_axis[axis_num].bar(
+        bars = plot_axis[axis_num].bar(
             x=pos_x,
             height=kwargs['height_bar'],
             width=kwargs['width_bar'],
             color=bar_colors)
-        if need_to_show_now:
-            plot_axis[axis_num].show()
+        if bit_seqs is not None:
+            if vertical_bit_seqs:
+                for bar, bit_seq in zip(bars, bit_seqs):
+                    plot_axis[axis_num].text(bar.get_x(),
+                                             bar.get_height(),
+                                             bit_seq,
+                                             ha='left',
+                                             va='bottom',
+                                             rotation=90)
+            else:
+                try:
+                    for i in range(len(min(bars, bit_seqs, key=len))):
+                        # AttributeError: 'str' object has no attribute 'set_label'
+                        bars[i].set_label(bit_seqs[i])  # Устанавливаем подпись для каждого столбика
+                except AttributeError:
+                    ...
+                plot_axis[axis_num].legend(loc='upper right')  # Отображаем легенду
+        if kwargs['need_to_show_now']:
+            plt.show()
 
 
 def plot_convolution(signal_source,
@@ -460,15 +492,38 @@ def plot_convolution(signal_source,
                         bar_colors='red')
 
 
-def determine_peak_sequences(peaks_x, sequences):
+def determine_peak_sequences(peaks_x, sequences, bits):
     idx_of_seq = []
     for peak_x in peaks_x:
         for idx, seq in enumerate(sequences):
-            if peak_x in seq:
-                print(f'{peak_x=}, {seq=}')
+            if seq[0] <= peak_x <= seq[-1]:
                 idx_of_seq.append(idx)
-    return [sequences[i] for i in idx_of_seq]
+    # print(f'{idx_of_seq=}')
+    return [bits[i] for i in idx_of_seq]
 
+
+def counting_equal_bits(bit_num1, bit_num2):
+    equal_count, non_equal_count = 0, 0
+    for bit in zip(list(bit_num1[2:]), list(bit_num2[2:])):
+        if bit[0] == bit[1]:
+            equal_count += 1
+        else:
+            non_equal_count += 1
+    return equal_count, non_equal_count
+
+
+# Поменять на нормальные названия везде
+def comparing_bit_sequences(sequences1, sequences2):
+    percents = []
+    for seq_group in zip(sequences1, sequences2):
+        # Будет ли Missing Argument??? Нет такого =D
+        percent = counting_equal_bits(*seq_group)[0] / len(seq_group[0]) * 100
+        percents.append(round(percent, 3))
+    return percents, sum(percents) / len(percents)
+
+# Код Хеминга?
+def correct_bits(sequence):
+    ...
 
 '''RID = RndInputData()
 
@@ -528,46 +583,76 @@ if __name__ == '__main__':
                           include_remains=True, where_include='center')
     print(quants[-1][-1] == opt_rec_orig_x[-1])
 
-    print(generate_sequence(1024))
+    binary_bits = generate_sequence(1024)
+    print(binary_bits)
 
     m_intv_distance = mean_interval_distance(quants, 1024)
     print(f'{m_intv_distance=}')
 
-    peak_sequences = determine_peak_sequences(ref_signal.peaks_x, quants)
-    print(f'{peak_sequences=}')
-
     fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(10, 5))
 
-    plot_sequence_borders(peak_sequences, axes, 0)
+    # plot_sequence_borders(peak_sequences, axes, 0)
 
     # цвета должны соответствовать столбца в независимости от сдвигов
     # и прыжков (отфиксировать строемую длину???)
     # зафиксировать оси для обоих bar plot-ов (максимальый масштаб)
     # передавать пики или ts и us ???
-    plot_peaks_bar(ref_signal,
+    (orig_bar_peaks_x,
+     orig_bar_colors) = gen_peaks_bar(
+        ref_signal,
+        len_bar=ref_signal.peaks_x,
+        bar_colors_seed=bar_colors_seed
+    )
+    (noise_bar_peaks_x,
+     noise_bar_colors) = gen_peaks_bar(
+        ref_signal,
+        add_noise=True,
+        # 0.0009866208565240113
+        noise_limits=[-0.1, 0.1],
+        # при noise_limits=[-0.00001, 0.00001],
+        # при noise_limits=[-0.0001, 0.0001]
+        # noise_limits=[-0.001, 0.001]
+        # могут пропадать целые биты
+        len_bar=ref_signal.peaks_x,
+        bar_colors_seed=bar_colors_seed
+    )
+    print(orig_bar_peaks_x, noise_bar_peaks_x)
+    print(orig_bar_peaks_x == noise_bar_peaks_x)
+
+    orig_peak_sequences = determine_peak_sequences(orig_bar_peaks_x, quants, binary_bits)
+    print(f'{orig_peak_sequences}')
+
+    noise_peak_sequences = determine_peak_sequences(noise_bar_peaks_x, quants, binary_bits)
+    print(f'{noise_peak_sequences}')
+
+    (all_equal_percents,
+     mean_equal_percent) = comparing_bit_sequences(
+        orig_peak_sequences, noise_peak_sequences)
+
+    print(f'{all_equal_percents=}, {mean_equal_percent=}')
+
+    plot_peaks_bar(orig_bar_peaks_x,
+                   orig_bar_colors,
                    plot_axis=axes,
                    axis_num=0,
                    need_to_show_now=False,
-                   len_bar=ref_signal.peaks_x,
                    height_bar=ref_signal.peaks_y,
                    width_bar=len(ref_signal.sig_x) * (ref_signal.sig_x[1] - ref_signal.sig_x[0]),
                    x_axis_label='Исходное расположение пиков',
                    y_axis_label='Высота пиков',
-                   bar_colors_seed=bar_colors_seed
+                   bit_seqs=orig_peak_sequences
                    )
 
-    plot_peaks_bar(ref_signal,
-                   add_noise=True,
+    plot_peaks_bar(noise_bar_peaks_x,
+                   noise_bar_colors,
                    plot_axis=axes,
                    axis_num=1,
                    need_to_show_now=False,
-                   len_bar=ref_signal.peaks_x,
                    height_bar=ref_signal.peaks_y,
                    width_bar=len(ref_signal.sig_x) * (ref_signal.sig_x[1] - ref_signal.sig_x[0]),
-                   noise_limits=[-0.1, 0.1],
                    x_axis_label='Сдвинутые шумом пики',
                    y_axis_label='Высота пиков',
-                   bar_colors_seed=bar_colors_seed
+                   bit_seqs=noise_peak_sequences
                    )
 
     try:
