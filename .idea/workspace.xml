@@ -7,7 +7,9 @@
     <list default="true" id="4dd2c066-b30a-4a76-ad0b-365be953594a" name="Changes" comment="```````````````Генерация данных, версия 0.0.6: &#10;- добавлены цветной вывод пиков и генерация шума для них&#10;&#10;&#10;```````````````">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/DataProcessing.py" beforeDir="false" afterPath="$PROJECT_DIR$/DataProcessing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GenData.py" beforeDir="false" afterPath="$PROJECT_DIR$/GenData.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/StatsAnalysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/StatsAnalysis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_mean_interval_distances.txt" beforeDir="false" afterPath="$PROJECT_DIR$/test_mean_interval_distances.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -52,22 +54,27 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Python.DataProcessing.executor&quot;: &quot;Run&quot;,
-    &quot;Python.DataProcessing_tmp1.executor&quot;: &quot;Run&quot;,
-    &quot;Python.GenData.executor&quot;: &quot;Run&quot;,
-    &quot;Python.PhysChannel.executor&quot;: &quot;Run&quot;,
-    &quot;Python.StatsAnalysis.executor&quot;: &quot;Run&quot;,
-    &quot;Python.main.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;ToolWindowGit.ShowToolbar&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;GenData&quot;,
-    &quot;last_opened_file_path&quot;: &quot;B:/Женя/Pycharm Projects/InnostageTmp&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.DataProcessing.executor": "Run",
+    "Python.DataProcessing_tmp1.executor": "Run",
+    "Python.GenData.executor": "Run",
+    "Python.PhysChannel.executor": "Run",
+    "Python.StatsAnalysis.executor": "Run",
+    "Python.main.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "ToolWindowGit.ShowToolbar": "false",
+    "git-widget-placeholder": "GenData",
+    "last_opened_file_path": "B:/Женя/Pycharm Projects/InnostageTmp",
+    "settings.editor.selected.configurable": "preferences.pluginManager"
+  },
+  "keyToStringList": {
+    "ChangesTree.GroupingKeys": [
+      "directory"
+    ]
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="B:\Женя\Курсовая\CourseWork" />
@@ -76,7 +83,7 @@
       <recent name="B:\Женя\Курсовая\CourseWork" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.DataProcessing">
+  <component name="RunManager" selected="Python.StatsAnalysis">
     <configuration name="DataProcessing" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="CourseWork" />
       <option name="ENV_FILES" value="" />
@@ -145,8 +152,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.DataProcessing" />
         <item itemvalue="Python.StatsAnalysis" />
+        <item itemvalue="Python.DataProcessing" />
         <item itemvalue="Python.GenData" />
       </list>
     </recent_temporary>
@@ -231,7 +238,15 @@
       <option name="project" value="LOCAL" />
       <updated>1716134000755</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="```````````````Генерация данных, версия 0.0.6: &#10;- добавлены цветной вывод пиков и генерация шума для них&#10;&#10;&#10;```````````````">
+      <option name="closed" value="true" />
+      <created>1716268978054</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1716268978054</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -260,14 +275,9 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/GenData.py</url>
-          <line>183</line>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/DataProcessing.py</url>
-          <line>628</line>
-          <option name="timeStamp" value="2" />
+          <line>748</line>
+          <option name="timeStamp" value="7" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

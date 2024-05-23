@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math as m
 import random as rnd
+from PhysChannel import add_delays
 from GenData import RndInputData, save_data_to_file, parse_data_from_file
 from GenData import ExtractSignal
 import pyqtgraph as pg
@@ -155,7 +156,12 @@ def mean_quantisation_old(array, length, bits_count,
 
 def mean_quantisation(array, length, bits_count,
                       include_remains=False,
-                      where_include='center'):
+                      where_include='center',
+                      **kwargs):
+    if bits_count == 1:
+        return [array]
+    elif bits_count == 2:
+        return [array[0:length//2], array[length//2::]]
     step = length // bits_count
     extended_size = step
     if include_remains:
@@ -247,6 +253,81 @@ print(f'{x1=}, {x2=}')
 '''
 
 
+def array_extension(array, extent):
+    # Проверяем, что extent корректный
+    if extent < 0 or extent > len(array) - 1:
+        raise ValueError("Extent должен быть положительным и не больше len(array) - 1")
+
+    # Преобразуем список в массив NumPy, если это необходимо
+    if isinstance(array, list):
+        array = np.array(array)
+
+    # Создаем результирующий массив с достаточным размером
+    extended_array = []
+
+    # Перебираем пары соседних элементов и вставляем между ними средние значения
+    for i in range(len(array) - 1):
+        extended_array.append(array[i])
+
+        # Вставляем средние значения extent раз
+        for j in range(extent):
+            weight = (j + 1) / (extent + 1)
+            average_value = (1 - weight) * array[i] + weight * array[i + 1]
+            extended_array.append(average_value)
+
+    # Добавляем последний элемент
+    extended_array.append(array[-1])
+
+    # Преобразуем обратно в list, если исходный массив был list
+    if isinstance(array, np.ndarray):
+        return np.array(extended_array)
+    else:
+        return extended_array
+
+
+def array_mean_extension(array, extent):
+    # Проверяем, что extent корректный
+    if extent < 0 or extent > len(array) - 1:
+        raise ValueError("Extent должен быть положительным и не больше len(array) - 1")
+
+    # Преобразуем список в массив NumPy, если это необходимо
+    if isinstance(array, list):
+        array = np.array(array)
+
+    # Создаем результирующий массив с достаточным размером
+    extended_array = []
+
+    # Перебираем пары соседних элементов и вставляем между ними среднее значение extent раз
+    for i in range(len(array) - 1):
+        extended_array.append(array[i])
+
+        if i < extent:
+            average_value = (array[i] + array[i + 1]) / 2
+            extended_array.append(average_value)
+
+    # Добавляем последний элемент
+    extended_array.append(array[-1])
+
+    # Преобразуем обратно в list, если исходный массив был list
+    if isinstance(array, np.ndarray):
+        return np.array(extended_array)
+    else:
+        return extended_array
+
+
+def min_squares(x, y, z):
+    X = np.column_stack((x, y))
+
+    # Добавляем столбец из единиц, чтобы учесть свободный член
+    X = np.column_stack((X, np.ones_like(x)))
+
+    # Находим коэффициенты уравнения плоскости с помощью метода наименьших квадратов
+    coefficients = np.linalg.lstsq(X, z, rcond=None)[0]
+
+    # Коэффициенты уравнения плоскости: z = ax + by + c
+    a, b, c = coefficients
+    return a, b, c
+
 def quantisation(array, bits_count, q_type='mean', **kwargs):
     # mean означает equal intervals
     # quant_types = {}
@@ -271,6 +352,7 @@ def generate_sequence(bits_count: int,
                       values: list[float] | np.array([float]) = None,
                       delay_delta: float = None,
                       book=False,
+                      to_shuffle=True,
                       **kwargs):
     if book:
         sequence = ''
@@ -286,7 +368,8 @@ def generate_sequence(bits_count: int,
         return bin(int(sequence, 2))
     else:
         res = ['0b' + bin(num)[2:].zfill(int(m.log2(bits_count))) for num in range(bits_count)]
-        rnd.shuffle(res)
+        if to_shuffle:
+            rnd.shuffle(res)
         return res
 
 
@@ -339,6 +422,7 @@ def plot_sequence_borders(seq, plot_axis, axis_num):
 def gen_peaks_bar(signal_source, add_noise=False, **kwargs):
     sig_orig_x = signal_source.opt_rec.orig_array_x
     pos_x = copy.deepcopy(kwargs['len_bar'])
+    noise = np.zeros(len(pos_x))
     if ('bar_colors' in kwargs) and len(kwargs['bar_colors']) > 0:
         bar_colors = kwargs['bar_colors']
     else:
@@ -349,18 +433,25 @@ def gen_peaks_bar(signal_source, add_noise=False, **kwargs):
             pos_x += kwargs['noise']
         else:
             if 'noise_limits' in kwargs:
-                noise = [np.random.uniform(
+                '''noise = [np.random.uniform(
                     kwargs['noise_limits'][0],
                     kwargs['noise_limits'][1])
-                    for _ in range(len(pos_x))]
-                for i, pos in enumerate(pos_x):
-                    if (pos + noise[i] < sig_orig_x[0]) and (noise[i] < 0):
-                        pos_x[i] = sig_orig_x[-1] + noise[i]
-                    elif (pos + noise[i] >= sig_orig_x[-1]) and (noise[i] > 0):
-                        pos_x[i] = sig_orig_x[0] + noise[i]
-                    else:
+                    for _ in range(len(pos_x))]'''
+                noise = np.random.uniform(
+                    kwargs['noise_limits'][0],
+                    kwargs['noise_limits'][1], len(pos_x))
+                if 'extend_axis_x' in kwargs and kwargs['extend_axis_x']:
+                    for i, pos in enumerate(pos_x):
+                        if (pos + noise[i] < sig_orig_x[0]) and (noise[i] < 0):
+                            pos_x[i] = sig_orig_x[-1] + noise[i]
+                        elif (pos + noise[i] >= sig_orig_x[-1]) and (noise[i] > 0):
+                            pos_x[i] = sig_orig_x[0] + noise[i]
+                        else:
+                            pos_x[i] += noise[i]
+                else:
+                    for i in range(len(pos_x)):
                         pos_x[i] += noise[i]
-    return pos_x, bar_colors
+    return pos_x, bar_colors, noise
 
 
 def plot_peaks_bar(pos_x, bar_colors,
@@ -494,16 +585,25 @@ def plot_convolution(signal_source,
 
 def determine_peak_sequences(peaks_x, sequences, bits):
     idx_of_seq = []
-    for peak_x in peaks_x:
-        for idx, seq in enumerate(sequences):
-            if seq[0] <= peak_x <= seq[-1]:
-                idx_of_seq.append(idx)
-    # print(f'{idx_of_seq=}')
-    return [bits[i] for i in idx_of_seq]
+    if len(sequences) == 1 and len(bits) == 1:
+        idx_of_seq.append(bits[0])
+        return idx_of_seq
+    try:
+        for peak_x in peaks_x:
+            for idx, seq in enumerate(sequences):
+                if seq[0] <= peak_x <= seq[-1]:
+                    idx_of_seq.append(idx)
+        # print(f'{idx_of_seq=}')
+        return [bits[i] for i in idx_of_seq]
+    except IndexError:
+        return idx_of_seq
 
 
 def counting_equal_bits(bit_num1, bit_num2):
     equal_count, non_equal_count = 0, 0
+    if len(bit_num1) == len(bit_num2) and len(bit_num2) == 3 and \
+        bit_num1 == bit_num2:
+        return 3, 0
     for bit in zip(list(bit_num1[2:]), list(bit_num2[2:])):
         if bit[0] == bit[1]:
             equal_count += 1
@@ -512,18 +612,35 @@ def counting_equal_bits(bit_num1, bit_num2):
     return equal_count, non_equal_count
 
 
-# Поменять на нормальные названия везде
-def comparing_bit_sequences(sequences1, sequences2):
-    percents = []
-    for seq_group in zip(sequences1, sequences2):
-        # Будет ли Missing Argument??? Нет такого =D
-        percent = counting_equal_bits(*seq_group)[0] / len(seq_group[0]) * 100
-        percents.append(round(percent, 3))
-    return percents, sum(percents) / len(percents)
+# Поменять на нормальные названия везде (comparing или comparison???)
+def comparing_bit_sequences(sequences1, sequences2,
+                            comparison_type='percent',
+                            **kwargs):
+    try:
+        if comparison_type == 'percent':
+            percents = []
+            for seq_group in zip(sequences1, sequences2):
+                # Будет ли Missing Argument??? Нет такого =D
+                percent = counting_equal_bits(*seq_group)[0] / len(seq_group[0]) * 100
+                percents.append(round(percent, 3))
+            return percents, sum(percents) / len(percents)
+        elif comparison_type == 'full_equal':
+            equals = []
+            for seq_group in zip(sequences1, sequences2):
+                # Будет ли Missing Argument??? Нет такого =D
+                if counting_equal_bits(*seq_group)[0] / len(seq_group[0]) * 100 >= 80:
+                    equals.append(1)
+                else:
+                    equals.append(0)
+            return equals, sum(equals) / len(equals)
+    except ZeroDivisionError:
+        return [], 0
+
 
 # Код Хеминга?
 def correct_bits(sequence):
     ...
+
 
 '''RID = RndInputData()
 
@@ -571,23 +688,15 @@ plt.show()'''
 
 if __name__ == '__main__':
     ref_signal = ExtractSignal()
+    count_peaks = 15
+    ref_signal.phys_channel.diff = count_peaks
     ref_signal.signal_extraction()
+    print(ref_signal.phys_channel.diff)
+    opt_rec_orig_x = ref_signal.opt_rec.orig_array_x
+    len_opt_rec_orig_x = len(opt_rec_orig_x)
     print(f'{ref_signal.peaks_x=}, {ref_signal.ts=}')
     print(f'{ref_signal.peaks_y=}, {ref_signal.us=}')
     bar_colors_seed = rnd.randint(0, 256)
-
-    # Проведение квантизации
-    opt_rec_orig_x = ref_signal.opt_rec.orig_array_x
-    len_opt_rec_orig_x = len(opt_rec_orig_x)
-    quants = quantisation(opt_rec_orig_x, 1024,
-                          include_remains=True, where_include='center')
-    print(quants[-1][-1] == opt_rec_orig_x[-1])
-
-    binary_bits = generate_sequence(1024)
-    print(binary_bits)
-
-    m_intv_distance = mean_interval_distance(quants, 1024)
-    print(f'{m_intv_distance=}')
 
     fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(10, 5))
 
@@ -598,13 +707,12 @@ if __name__ == '__main__':
     # зафиксировать оси для обоих bar plot-ов (максимальый масштаб)
     # передавать пики или ts и us ???
     (orig_bar_peaks_x,
-     orig_bar_colors) = gen_peaks_bar(
+     orig_bar_colors, _) = gen_peaks_bar(
         ref_signal,
-        len_bar=ref_signal.peaks_x,
-        bar_colors_seed=bar_colors_seed
-    )
+        len_bar=ref_signal.ts,
+        bar_colors_seed=bar_colors_seed)
     (noise_bar_peaks_x,
-     noise_bar_colors) = gen_peaks_bar(
+     noise_bar_colors, noise_bar_x) = gen_peaks_bar(
         ref_signal,
         add_noise=True,
         # 0.0009866208565240113
@@ -613,11 +721,23 @@ if __name__ == '__main__':
         # при noise_limits=[-0.0001, 0.0001]
         # noise_limits=[-0.001, 0.001]
         # могут пропадать целые биты
-        len_bar=ref_signal.peaks_x,
+        len_bar=ref_signal.ts,
         bar_colors_seed=bar_colors_seed
     )
     print(orig_bar_peaks_x, noise_bar_peaks_x)
     print(orig_bar_peaks_x == noise_bar_peaks_x)
+
+    # Проведение квантизации
+    quants = quantisation(opt_rec_orig_x, 1,
+                          include_remains=True, where_include='center')
+    print(f'{len(quants)=}')
+    # print(quants[-1][-1] == opt_rec_orig_x[-1])
+
+    binary_bits = generate_sequence(1)
+    print(binary_bits)
+
+    m_intv_distance = mean_interval_distance(quants, 1)
+    print(f'{m_intv_distance=}')
 
     orig_peak_sequences = determine_peak_sequences(orig_bar_peaks_x, quants, binary_bits)
     print(f'{orig_peak_sequences}')
@@ -636,7 +756,7 @@ if __name__ == '__main__':
                    plot_axis=axes,
                    axis_num=0,
                    need_to_show_now=False,
-                   height_bar=ref_signal.peaks_y,
+                   height_bar=ref_signal.us,
                    width_bar=len(ref_signal.sig_x) * (ref_signal.sig_x[1] - ref_signal.sig_x[0]),
                    x_axis_label='Исходное расположение пиков',
                    y_axis_label='Высота пиков',
@@ -648,7 +768,7 @@ if __name__ == '__main__':
                    plot_axis=axes,
                    axis_num=1,
                    need_to_show_now=False,
-                   height_bar=ref_signal.peaks_y,
+                   height_bar=ref_signal.us,
                    width_bar=len(ref_signal.sig_x) * (ref_signal.sig_x[1] - ref_signal.sig_x[0]),
                    x_axis_label='Сдвинутые шумом пики',
                    y_axis_label='Высота пиков',

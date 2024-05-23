@@ -198,7 +198,7 @@ class ExtractSignal(Ui_MainWindow):
             'height_ratios': [1, 1]})
         self.init_axes()
         self.read_sig_info()
-        self.read_ph_ch_info()
+        # self.read_ph_ch_info()
         self.gen_sig()
         self.gen_delays()
         self.gen_del_noise_sig()
