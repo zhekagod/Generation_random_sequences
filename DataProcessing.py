@@ -710,7 +710,7 @@ def comparing_bit_sequences(sequences1, sequences2,
             percents = []
             for seq_group in zip(sequences1, sequences2):
                 # Будет ли Missing Argument??? Нет такого =D
-                percent = counting_equal_bits(*seq_group)[0] / len(seq_group[0]) * 100
+                percent = counting_equal_bits(*seq_group)[0] / len(seq_group[0][2:]) * 100
                 percents.append(round(percent, 3))
             return percents, sum(percents) / len(percents)
         elif comparison_type == 'full_equal':
@@ -803,7 +803,7 @@ if __name__ == '__main__':
         ref_signal,
         add_noise=True,
         # 0.0009866208565240113
-        noise_limits=[-0.1, 0.1],
+        noise_limits=[-0.00001, 0.00001],
         # при noise_limits=[-0.00001, 0.00001],
         # при noise_limits=[-0.0001, 0.0001]
         # noise_limits=[-0.001, 0.001]
@@ -839,7 +839,7 @@ if __name__ == '__main__':
      mean_equal_percent) = comparing_bit_sequences(
         orig_peak_sequences, noise_peak_sequences)
 
-    print(f'{all_equal_percents=}, {mean_equal_percent=}')
+    print(f'{all_equal_percents=}, {mean_equal_percent=}', sep='\n')
 
     fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(10, 5))
 
