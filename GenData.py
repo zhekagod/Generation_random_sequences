@@ -176,17 +176,6 @@ class ExtractSignal(Ui_MainWindow):
         # change from window
         self.opt_rec.noise_u = self.phys_channel.noise_u
 
-    def signal_extraction_old(self):
-        self.gen_sig()
-        self.gen_delays()
-        self.gen_del_noise_sig()
-
-        self.gen_conv()  # Response of correlation receiver
-        self.snr_calc()
-        self.gen_peaks()
-        self.gen_borders()
-        self.gen_spec()
-
     def set_opt_rec_arrays(self):
         self.opt_rec.orig_array_x = np.append(self.sig_del_noise_x, np.array([max(self.sig_del_noise_x) + self.dt]))
         self.opt_rec.orig_array_y = np.append(np.abs(self.conv), np.zeros(1))
@@ -215,11 +204,15 @@ class ExtractSignal(Ui_MainWindow):
         noise = None
         if noise_type == 'normal':
             noise = np.random.normal(0, noise_coef, size=size)
+        elif noise_type == 'uniform':
+            noise = np.random.uniform(-noise_coef, noise_coef, size=size)
         if set_to_axis == 'x':
             self.noise_x = noise
         elif set_to_axis == 'y':
             self.noise_y = noise
         return noise
+
+
 
 
 def save_data_to_file(data, filename='input_signal_data.txt'):
@@ -258,6 +251,7 @@ def parse_data_from_file(filename='input_signal_data.txt'):
                     res[partition[0]] = partition[1]
                 flag = False
     return res
+
 
 
 if __name__ == '__main__':

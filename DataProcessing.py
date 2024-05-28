@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
 import math as m
 import random as rnd
 from PhysChannel import add_delays
@@ -161,7 +162,7 @@ def mean_quantisation(array, length, bits_count,
     if bits_count == 1:
         return [array]
     elif bits_count == 2:
-        return [array[0:length//2], array[length//2::]]
+        return [array[0:length // 2], array[length // 2::]]
     step = length // bits_count
     extended_size = step
     if include_remains:
@@ -315,6 +316,41 @@ def array_mean_extension(array, extent):
         return extended_array
 
 
+def extend_list(lst, end_value, num_steps):
+    if isinstance(lst, np.ndarray):
+        lst = lst.tolist()
+    start_value = lst[-1]
+    new_values = np.linspace(start_value, end_value, num_steps)[1:]  # Исключаем стартовое значение
+    extended_lst = lst + new_values.tolist()
+    return extended_lst
+
+
+def extend_list_to_value(lst, target_value):
+    if isinstance(lst, np.ndarray):
+        lst = lst.tolist()
+
+    if not lst:
+        return [target_value]
+
+
+    # Последний элемент в исходном списке
+    last_value = lst[-1]
+
+    # Продолжаем список до целевого значения, используя линейную экстраполяцию
+    extended_list = lst.copy()
+    while last_value < target_value:
+        # Определяем шаг продолжения
+        step = lst[-1] - lst[-2] if len(lst) > 1 else 1
+
+        # Продолжаем список
+        extended_list.append(last_value + step)
+
+        # Обновляем последнее значение
+        last_value = extended_list[-1]
+
+    return extended_list
+
+
 def min_squares(x, y, z):
     X = np.column_stack((x, y))
 
@@ -327,6 +363,7 @@ def min_squares(x, y, z):
     # Коэффициенты уравнения плоскости: z = ax + by + c
     a, b, c = coefficients
     return a, b, c
+
 
 def quantisation(array, bits_count, q_type='mean', **kwargs):
     # mean означает equal intervals
@@ -355,19 +392,22 @@ def generate_sequence(bits_count: int,
                       to_shuffle=True,
                       **kwargs):
     if book:
+        res = []
         sequence = ''
         # Написано, что ключевые биты генерируются
         # при оценки по одному каналу
-        for i in range(1, bits_count):
-            if values[i] - values[i - 1] - delay_delta >= 0:
-                sequence += '1'
-            elif values[i] - values[i - 1] - delay_delta < 0:
-                sequence += '0'
-        max_length = max(len(sequence).bit_count(), bits_count.bit_count())
-        sequence = sequence.zfill(int(m.log2(max_length)))
-        return bin(int(sequence, 2))
+        for _ in range(bits_count):
+            for i in range(1, bits_count):
+                if values[i] - values[i - 1] - delay_delta >= 0:
+                    sequence += '1'
+                elif values[i] - values[i - 1] - delay_delta < 0:
+                    sequence += '0'
+            max_length = max(len(sequence).bit_count(), bits_count.bit_count())
+            sequence = sequence.zfill(int(m.log2(max_length)))
+            res.append(bin(int(sequence, 2)))
+        return res
     else:
-        res = ['0b' + bin(num)[2:].zfill(int(m.log2(bits_count))) for num in range(bits_count)]
+        res = ['0b' + bin(num)[2:].zfill(int(round(m.log2(bits_count)))) for num in range(bits_count)]
         if to_shuffle:
             rnd.shuffle(res)
         return res
@@ -382,7 +422,8 @@ def generate_random_colors(count, seed=1):
     return colors
 
 
-def find_interval_distance(array: list[list[float]] | np.array((np.array([float]))),
+def find_interval_distance(array: list[list[float]] |
+                                  np.array((np.array([float]))),
                            first: int, second: int,
                            idx: int = 0):
     try:
@@ -510,6 +551,54 @@ def plot_peaks_bar(pos_x, bar_colors,
                 plot_axis[axis_num].legend(loc='upper right')  # Отображаем легенду
         if kwargs['need_to_show_now']:
             plt.show()
+    if 'quants' in kwargs:
+        plot_rectangles(kwargs['quants'], plot_axis=plot_axis, axis_num=axis_num)
+
+
+def plot_rectangles(quants, main_color='blue', diff_color='red',
+                    plot_axis=None, axis_num=None, show_ticks=False):
+    # Определяем индекс самого длинного прямоугольника
+    max_index = max(range(len(quants)), key=lambda i: len(quants[i]))
+
+    if plot_axis is None:
+        # Создаем фигуру и оси для графика
+        fig, ax = plt.subplots()
+    else:
+        ax = plot_axis[axis_num]
+
+    '''# Отрисовываем прямоугольники
+    for i, quant in enumerate(quants):
+        if i == max_index:
+            # Отличаем самый длинный прямоугольник другим цветом
+            ax.barh(1, quants[i][-1] - quants[i][0], left=quants[i][0], height=0.5, color=diff_color)
+        else:
+            ax.barh(1, quants[i][-1] - quants[i][0], left=quants[i][0], height=0.5, color=main_color)'''
+
+    # Отрисовываем прямоугольники
+    for i, quant in enumerate(quants):
+        if i != max_index:
+            ax.add_patch(
+                Rectangle((quant[0], 0), quant[-1] - quant[0], 0.1,
+                          edgecolor=main_color, facecolor='silver', lw=1))
+
+    else:
+        # Отличаем самый длинный прямоугольник другим цветом
+        ax.add_patch(
+            Rectangle((quants[max_index][0], 0), quants[max_index][-1] - quants[max_index][0], 0.1,
+                      edgecolor=diff_color, facecolor='grey', lw=2))
+
+    x_ticks = []
+    for i in range(len(quants)):
+        x_ticks.append(quants[i][0])
+        x_ticks.append(quants[i][-1])
+
+    if show_ticks:
+        # Устанавливаем метки осей
+        ax.set_xticks(x_ticks)
+        ax.set_yticks(np.arange(0, 1, 0.1))
+        plt.ylim(top=0.5)
+        # Показываем график
+        plt.show()
 
 
 def plot_convolution(signal_source,
@@ -602,7 +691,7 @@ def determine_peak_sequences(peaks_x, sequences, bits):
 def counting_equal_bits(bit_num1, bit_num2):
     equal_count, non_equal_count = 0, 0
     if len(bit_num1) == len(bit_num2) and len(bit_num2) == 3 and \
-        bit_num1 == bit_num2:
+            bit_num1 == bit_num2:
         return 3, 0
     for bit in zip(list(bit_num1[2:]), list(bit_num2[2:])):
         if bit[0] == bit[1]:
@@ -688,7 +777,7 @@ plt.show()'''
 
 if __name__ == '__main__':
     ref_signal = ExtractSignal()
-    count_peaks = 15
+    count_peaks = 5
     ref_signal.phys_channel.diff = count_peaks
     ref_signal.signal_extraction()
     print(ref_signal.phys_channel.diff)
@@ -697,8 +786,6 @@ if __name__ == '__main__':
     print(f'{ref_signal.peaks_x=}, {ref_signal.ts=}')
     print(f'{ref_signal.peaks_y=}, {ref_signal.us=}')
     bar_colors_seed = rnd.randint(0, 256)
-
-    fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(10, 5))
 
     # plot_sequence_borders(peak_sequences, axes, 0)
 
@@ -728,15 +815,18 @@ if __name__ == '__main__':
     print(orig_bar_peaks_x == noise_bar_peaks_x)
 
     # Проведение квантизации
-    quants = quantisation(opt_rec_orig_x, 1,
+    quants = quantisation(extend_list_to_value(opt_rec_orig_x, noise_bar_peaks_x[-1]), 100,
                           include_remains=True, where_include='center')
     print(f'{len(quants)=}')
     # print(quants[-1][-1] == opt_rec_orig_x[-1])
 
-    binary_bits = generate_sequence(1)
+    quarks = [[0, 5], [5, 10], [10, 15], list(range(15, 26)), [25, 30], [30, 35], [35, 40]]
+    plot_rectangles(quarks, show_ticks=True)
+
+    binary_bits = generate_sequence(100)
     print(binary_bits)
 
-    m_intv_distance = mean_interval_distance(quants, 1)
+    m_intv_distance = mean_interval_distance(quants, 100)
     print(f'{m_intv_distance=}')
 
     orig_peak_sequences = determine_peak_sequences(orig_bar_peaks_x, quants, binary_bits)
@@ -751,6 +841,8 @@ if __name__ == '__main__':
 
     print(f'{all_equal_percents=}, {mean_equal_percent=}')
 
+    fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(10, 5))
+
     plot_peaks_bar(orig_bar_peaks_x,
                    orig_bar_colors,
                    plot_axis=axes,
@@ -760,8 +852,8 @@ if __name__ == '__main__':
                    width_bar=len(ref_signal.sig_x) * (ref_signal.sig_x[1] - ref_signal.sig_x[0]),
                    x_axis_label='Исходное расположение пиков',
                    y_axis_label='Высота пиков',
-                   bit_seqs=orig_peak_sequences
-                   )
+                   bit_seqs=orig_peak_sequences,
+                   quants=quants)
 
     plot_peaks_bar(noise_bar_peaks_x,
                    noise_bar_colors,
@@ -772,8 +864,8 @@ if __name__ == '__main__':
                    width_bar=len(ref_signal.sig_x) * (ref_signal.sig_x[1] - ref_signal.sig_x[0]),
                    x_axis_label='Сдвинутые шумом пики',
                    y_axis_label='Высота пиков',
-                   bit_seqs=noise_peak_sequences
-                   )
+                   bit_seqs=noise_peak_sequences,
+                   quants=quants)
 
     try:
         print(f'{ref_signal.sig_x == ref_signal.sig_del_noise_x}')
